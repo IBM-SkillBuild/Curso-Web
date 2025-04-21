@@ -1,4 +1,3 @@
-# utils/database.py
 import sqlite3
 import os
 
@@ -52,8 +51,13 @@ def crear_db():
                 UNIQUE(nombre, curso)
             )''')
 
-            
-           
+            # Nueva tabla para sesiones de Flask-Session
+            cursor.execute('''CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                session_id TEXT NOT NULL UNIQUE,
+                data TEXT NOT NULL,
+                expiry TIMESTAMP
+            )''')
 
             conn.commit()
     except sqlite3.Error as e:
