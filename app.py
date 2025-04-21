@@ -32,7 +32,7 @@ google = oauth.register(
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile', 'prompt': 'select_account'},
-    redirect_uri='https://curso-web-alvr.onrender.com'
+    redirect_uri='https://curso-web-alvr.onrender.com/google_callback'
 )
 
 # Crear la base de datos al iniciar
