@@ -11,6 +11,7 @@ import requests
 from PIL import Image
 import io
 import json
+from flask_cors import CORS
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'mp4', 'avi', 'mov', 'mkv'}
@@ -21,6 +22,8 @@ fecha_ultima_actualizacion = os.getenv('ULTIMA_ACTUALIZACION')
 nombre_del_sitio_web = os.getenv('NOMBRE_DEL_SITIO_WEB')
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "https://curso-web-alvr.onrender.com"}})
+
 app.secret_key = os.getenv('FLASK_SECRET_KEY')  # Clave secreta desde .env
 STATIC_FOLDER = 'static'
 
@@ -32,7 +35,8 @@ google = oauth.register(
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile', 'prompt': 'select_account'},
-    redirect_uri='https://curso-web-alvr.onrender.com/google_callback'
+      redirect_uri='https://curso-web-alvr.onrender.com'
+
 )
 
 # Crear la base de datos al iniciar
