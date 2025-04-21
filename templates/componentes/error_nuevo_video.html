@@ -1,0 +1,8 @@
+<div class="flex justify-center items-center min-h-[50vh]">
+    <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-md text-center">
+        <h2 class="text-2xl font-semibold text-red-600 mb-4">Error</h2>
+        <p class="text-gray-700 mb-4">{{ mensaje }}</p>
+        <button hx-get="/peticion_de_nuevo_video" hx-target="#contenido" hx-swap="innerHTML"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Volver al formulario</button>
+    </div>
+</div>

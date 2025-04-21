@@ -1,0 +1,74 @@
+<div class="w-full flex flex-col items-center p-0 m-0">
+    <div class="w-[80%] mx-auto p-0"> <!-- Nuevo div contenedor para títulos y párrafos -->
+        <h2 class="text-3xl font-semibold text-gray-800 mb-4 text-left">Lista de todos los Cursos <span style="cursor:pointer" onclick="ir_al_fondo()">⬇️</span></h2>
+        <p class="text-gray-600 mb-6 text-left">En esta página podrás encontrar cursos y tutoriales de programación Web.</p>
+        <p class="text-gray-600 mb-6 text-left">Los lenguajes principales que se utilizan para desarrollar el frontend son HTML, CSS y JavaScript. HTML (HyperText Markup Language) se encarga de la estructura de la página, CSS (Cascading Style Sheets) define su apariencia, como los colores y los tipos de letra, y JavaScript añade interactividad, como animaciones o formularios que se validan automáticamente.</p>
+    </div>
+
+    <!-- Ejemplo de contenido HTML con formato -->
+    <div class="w-[80%] mx-auto p-0">
+        <pre><code class="language-html">
+&lt;!-- Este es un ejemplo de esqueleto HTML básico --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+    &lt;head&gt;
+        &lt;!-- Metadatos y configuración del documento --&gt;
+        &lt;meta charset="UTF-8"&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+        &lt;title&gt;Título de la página&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;!-- Contenido principal de la página --&gt;
+        &lt;h1&gt;Hola Mundo&lt;/h1&gt;
+        &lt;p&gt;Estructura básica de HTML.&lt;/p&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+    </div>
+
+    <div id="lista_de_cursos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-[80%] mx-auto p-0"> <!-- Ajustado ancho y centrado -->
+        {% for curso in cursos %}
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition" style="margin-top: 2em;">
+            <h3 class="text-xl font-semibold text-gray-800">ID: {{ curso[0] }} - {{ curso[1] }}</h3>
+            <p class="text-gray-600 mt-2">Inscritos: {{ curso[2] }}</p>
+            <span id="user-{{ user_id }}" class="hidden">{{ user_id }}</span>
+            <span id="curso-{{ curso[0] }}" class="hidden">{{ curso[1] }}</span>
+            <button class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Ver Detalles</button>
+            <button class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                hx-get="/agregar_curso?id={{user_id}}&curso={{curso[1]}}"
+                hx-trigger="click"
+                hx-target="#mis_cursos"
+                hx-swap="innerHTML"
+            >Inscribirme / Acceso</button>
+            <div id="response-{{ curso[0] }}" class="mt-2 text-sm text-gray-600"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button id="go-up" 
+            class="mt-12 mb-12 mx-auto block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            onclick="fluidScroll({yPos: '0', duration: 300})">
+        Scroll Up
+    </button>
+
+    <script>
+    try{
+        document.getElementById('todos_los_cursos').style.display = "none";
+        suave()
+    }
+    catch(err){
+        console.log(err)
+    }
+
+    // Reinicializar Prism.js después de que HTMX cargue el contenido
+    document.addEventListener('htmx:afterSwap', function(event) {
+        Prism.highlightAll();
+    });
+
+    function ir_al_fondo(){
+        fluidScroll({yPos: 'end', duration: 300});
+       
+    }
+    </script>
+</div>
+

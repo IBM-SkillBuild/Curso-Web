@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursos y tutoriales de Programación Edu-Tech</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Ocultar la barra de desplazamiento vertical pero permitir el scroll */
+        html, body {
+            overflow-y: scroll; /* Asegura que el contenido pueda desplazarse */
+            scrollbar-width: none; /* Oculta la barra de desplazamiento en Firefox */
+        }
+
+        body::-webkit-scrollbar {
+            display: none; /* Oculta la barra de desplazamiento en navegadores basados en WebKit */
+        }
+    </style>
+    <!-- Prism.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <!-- Prism.js Dark Theme (Okaidia) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+</head>
+<body id="body" >
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 flex justify-between items-center ">
+        <div style="display: flex; margin-left: 1em;">
+            <div>
+                {% if user.foto %}
+                <img id="foto-perfil"
+                hx-get="/perfil?id={{user.id}}" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML "  hx-on::before-request="suave()"
+                class="rounded-full border-2 border-gray-200 " width="100" height="100" style="border: 1px solid white;cursor:pointer" 
+                src="{{ user.foto }}" alt="Foto de perfil" width="100">
+                {% endif %}
+            </div>
+            <div style="margin-left: 1em;">
+            <h1 class="text-2xl font-bold" style="cursor:pointer"
+            hx-get="/cursos?id={{user.id}}" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML"  hx-on::after-request="suave()"
+            >Cursos y tutoriales by edu</h1>
+            <p id="nombre_user" style="margin-bottom: 0.5em;" class="text-sm"><span>Bienvenido: </span>{{ user.nombre }}</p>
+            <div id="mis_cursos">
+            <button 
+            class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+            hx-get="/mis_cursos?id={{user.id}}" hx-target="#mis_cursos"
+             hx-swap="innerHTML" hx-trigger="click" hx-on::before-request="no_suave()"
+             >Mis cursos</button>
+            </div>
+           </div>
+        </div>
+        <button id="openDrawerBtn"  class="focus:outline-none">
+            <i class="fas fa-bars text-2xl" ></i>
+        </button>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main id="main" class="container mx-auto p-6 transition-all duration-300 " style="margin: 0 auto;">
+        <section id="contenido"  class="mb-8 mx-auto" hx-get="/cursos?id={{user.id}}" hx-trigger="load"  hx-swap="innerHTML"  ></section>
+    </main>
+
+    <!-- Drawer Lateraasidel -->
+    <aside id="drawer" style="background-color:#bad5eb;"  class="fixed top-0 right-0 h-full w-64 bg-white shadow-lg drawer drawer-closed z-50 transition-transform duration-300">
+        <div class="p-4" >
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Menú</h2>
+                <button id="closeDrawerBtn" class="focus:outline-none">
+                    <i class="fas fa-times text-gray-600"></i>
+                </button>
+            </div>
+            <nav>
+                <ul class="space-y-4">
+                    {% if user.id == 1 %}
+                    
+                        <a hx-get="/peticion_de_nuevo_video" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML" hx-on::after-request="toggleDrawer()"
+                           class="text-gray-600 hover:text-blue-500" style="cursor:pointer">Añadir un nuevo video</a>
+                    
+                    {% endif %}
+                    <li><a href="{{ url_for('inicio') }}" class="text-gray-600 hover:text-blue-500">Inicio</a></li>
+                    <li><a   hx-get="/perfil?id={{user.id}}" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML "  hx-on::after-request='close_drawer()'  hx-on::before-request="suave()"   hx-on::after-request=" fluidScroll({yPos: '0', duration: 100});"
+                        class="text-gray-600 hover:text-blue-500"  style="cursor:pointer">Actualizar perfíl</a></li>
+                    <li><a  hx-get="/cursos?id={{user.id}}" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML" hx-on::after-request=" fluidScroll({yPos: 'end', duration: 700})"  hx-on::before-request="suave()" 
+                         class="text-gray-600 hover:text-blue-500"  style="cursor:pointer">Todos los cursos</a></li>
+                    <li  hx-get="/users" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML"  hx-on::before-request="suave()"
+                    ><a  class="text-gray-600 hover:text-blue-500" style="cursor:pointer">Participantes</a></li>
+                    <li hx-get="/privacy" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML" hx-on::before-request="suave()" hx-on::after-request=" fluidScroll({yPos: '0', duration: 700})" ><a  class="text-gray-600 hover:text-blue-500"  style="cursor:pointer">Política de Privacidad</a></li>
+                    <li hx-get="/terms" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML" hx-on::before-request="suave()" hx-on::after-request=" fluidScroll({yPos: '0', duration: 700})" ><a class="text-gray-600 hover:text-blue-500"  style="cursor:pointer">Términos de Servicio</a></li>
+                    <li hx-get="/cookies" hx-trigger="click" hx-target="#contenido" hx-swap="innerHTML" hx-on::before-request="suave()" hx-on::after-request=" fluidScroll({yPos: '0', duration: 700})" ><a  class="text-gray-600 hover:text-blue-500"  style="cursor:pointer">Política de Cookies</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="text-red-500 hover:text-red-600">Cerrar Sesión</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Overlay para el drawer y cookies -->
+    <div id="overlay" class="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-300 z-40"></div>
+
+    <!-- Overlay de consentimiento de cookies -->
+    <div id="cookie-overlay" style="display: none;">
+        <div id="cookie-consent">
+            <h3>Política de Cookies</h3>
+            <p>
+                Utilizamos cookies para mejorar tu experiencia en nuestra plataforma. 
+                Para continuar navegando, debes aceptar nuestra política de cookies.
+            </p>
+            <div class="button-group">
+                <button id="accept-all-cookies" class="btn btn-primary">Aceptar todas</button>
+                <button id="accept-essential-cookies" class="btn btn-secondary">Solo esenciales</button>
+            </div>
+            <div class="privacy-links">
+                <a href="/privacy" target="_blank">Política de Privacidad</a> |
+                <a href="/cookies" target="_blank">Política de Cookies</a> |
+                <a href="/terms" target="_blank">Términos de Servicio</a>
+            </div>
+        </div>
+    </div>
+
+  
+
+    <!-- JavaScript para manejar el drawer y las cookies -->
+    <script>
+        const drawer = document.getElementById('drawer');
+        const openDrawerBtn = document.getElementById('openDrawerBtn');
+        const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+        const overlay = document.getElementById('overlay');
+        const cookieOverlay = document.getElementById('cookie-overlay');
+        const main = document.getElementById('main')
+       
+       
+        // Funciones para el drawer
+        function toggleDrawer() {
+            if (drawer.classList.contains('drawer-closed')) {
+                // Abrir el drawer
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                overlay.classList.add('overlay-open');
+                main.style.marginRight = '16rem'; // 16rem = 256px (w-64 en Tailwind)
+                try {
+                    const videoPlayer = document.getElementById('video-player');
+                    if (videoPlayer && !videoPlayer.paused) {
+                        videoPlayer.pause(); // Pausar el video al abrir el drawer
+                    }
+                } catch (e) {
+                    console.log('No se encontró el elemento de video o hubo un error:', e);
+                }
+            } else {
+                // Cerrar el drawer
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                overlay.classList.remove('overlay-open');
+                main.style.marginRight = '0'; // Restablecer el margen
+                fluidScroll({yPos: '0', duration: 100});
+                try {
+                    const videoPlayer = document.getElementById('video-player');
+                    if (videoPlayer && videoPlayer.paused) {
+                        videoPlayer.play(); // Reanudar el video al cerrar el drawer
+                    }
+                } catch (e) {
+                    console.log('No se encontró el elemento de video o hubo un error:', e);
+                }
+            }
+        }
+
+        openDrawerBtn.addEventListener('click', toggleDrawer);
+        closeDrawerBtn.addEventListener('click', toggleDrawer);
+        overlay.addEventListener('click', toggleDrawer);
+
+        // Funciones para el consentimiento de cookies
+        document.addEventListener('DOMContentLoaded', function() {
+            suave()
+            // Comprobar si ya se ha dado el consentimiento
+            if (localStorage.getItem('cookieConsentShown') === 'true') {
+                cookieOverlay.style.display = 'none';
+             
+            } else {
+                cookieOverlay.style.display = 'flex';
+            }
+
+            // Gestionar la aceptación de todas las cookies
+            document.getElementById('accept-all-cookies').addEventListener('click', function() {
+                localStorage.setItem('cookieConsentShown', 'true');
+                localStorage.setItem('cookieConsent', 'all');
+                cookieOverlay.style.display = 'none';
+                console.log('Todas las cookies aceptadas');
+            });
+
+            // Gestionar la aceptación solo de cookies esenciales
+            document.getElementById('accept-essential-cookies').addEventListener('click', function() {
+                localStorage.setItem('cookieConsentShown', 'true');
+                localStorage.setItem('cookieConsent', 'essential');
+                cookieOverlay.style.display = 'none';
+                console.log('Solo cookies esenciales aceptadas');
+            });
+        });
+
+        // Función para abrir el diálogo de cookies nuevamente
+        function reopenCookieConsent() {
+            document.getElementById('cookie-overlay').style.display = 'flex';
+        }
+
+        function suave(){
+            close_drawer()
+           document.getElementById('contenido').classList.add('suave');
+           setTimeout(function(){
+            document.getElementById('contenido').classList.remove('suave');
+        }, 1000);
+        }
+
+        function no_suave(){
+            document.getElementById('contenido').classList.remove('suave');
+        }
+
+        function close_drawer(){
+            if (drawer && drawer.classList.contains('drawer-open')) {
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                overlay.classList.remove('overlay-open');
+            }
+        }
+
+        function open_drawer(){
+            if (drawer && drawer.classList.contains('drawer-closed')) {
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                overlay.classList.add('overlay-open');
+                main.style.marginRight = '16rem'; // 16rem = 256px (w-64 en Tailwind)
+               
+            }
+        }
+
+        // Asegurar que los botones de mis_cursos.html cierren el drawer
+        document.addEventListener('click', function (event) {
+            if (event.target.closest('[hx-get="/mis_cursos"]')) {
+                close_drawer();
+            }
+        });
+    </script>
+     <!-- Incluir HTMX desde CDN -->
+     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/fluidscroll@2.0.0" integrity="sha384-ZvfwaJZFftLPOaPS13spccPYdWRcrfz/GDgUYAf7b6I2OBXY74KiAC6WVg0XF3Qq" crossorigin="anonymous"></script>
+     <!-- Prism.js JS -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-html.min.js"></script>
+</body>
+</html>

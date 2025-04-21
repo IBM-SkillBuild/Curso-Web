@@ -1,0 +1,47 @@
+
+{% if cursos %}
+       <span style="margin-right: 1em;">Estos son tus cursos: </span>
+        {% for curso in cursos %}
+           
+         <button
+         class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+         style="background-color: black;color:bisque" 
+         hx-get="/lista_de_videos/{{curso.nombre}}/{{user_id}}" 
+         hx-trigger="click" 
+         hx-target="#contenido" 
+         hx-swap="innerHTML"
+         hx-on::after-request='close_drawer()' 
+         >{{curso.nombre}}
+        
+        </button>
+     
+        {% endfor %}
+       
+    {% else %}
+        <p>No hay cursos inscritos para este usuario.</p>
+    {% endif %}
+
+
+    <button id="todos_los_cursos"
+  class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+ 
+  hx-get="/cursos?id={{user_id}}" hx-target="#contenido"
+   hx-swap="innerHTML" hx-trigger="click" hx-on::before-request="ocultar(this.id)"  hx-on::after-request='close_drawer()' 
+   >Ver todos los cursos</button>
+
+   <div 
+   class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+  
+   hx-get="/fondo_presentacion" hx-target="#contenido"
+    hx-swap="innerHTML" hx-trigger="load" hx-on::after-request="suave()"
+    ></div>
+
+    <script>
+        function ocultar(id){
+          
+            document.getElementById(id).style.display = "none";
+            suave()
+        }  
+    </script>
+
+  

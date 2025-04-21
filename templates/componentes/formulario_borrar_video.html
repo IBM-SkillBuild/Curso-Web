@@ -1,0 +1,16 @@
+<div class="p-6 bg-gray-100 rounded-lg shadow-md max-w-lg mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Borrar Video</h2>
+    <p class="mb-4">¿Estás seguro de que deseas borrar el video <strong>{{ video }}</strong> del curso <strong>{{ curso }}</strong>? Esta acción no se puede deshacer.</p>
+    <form hx-post="/eliminar_video" hx-target="#contenido" hx-swap="innerHTML">
+        <input type="hidden" name="curso" value="{{ curso }}">
+        <input type="hidden" name="video" value="{{ video }}">
+        <input type="hidden" name="id_usuario" value="{{ id_usuario }}">
+        <div class="flex gap-2">
+            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Sí, borrar</button>
+            <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600" 
+                    hx-get="/lista_de_videos/{{ curso }}/{{ id_usuario }}" 
+                    hx-target="#contenido" 
+                    hx-swap="innerHTML">Cancelar</button>
+        </div>
+    </form>
+</div>

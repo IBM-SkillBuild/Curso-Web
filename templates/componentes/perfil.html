@@ -1,0 +1,83 @@
+<!-- templates/componentes/perfil.html -->
+<div class="w-full flex justify-center p-0 m-0">
+    <div class="w-[80%] flex justify-center"> <!-- Modificado: añadido flex justify-center y eliminado max-w-md -->
+        <div id="htmx-perfil" class="bg-white rounded-lg shadow-md p-6" style="margin-top: 6em; width: 400px;"> <!-- Añadido ancho fijo -->
+            <button onclick="ver_cursos()" style="top:0;float:right"><span style="font-size: 23px;">⬆</span></button>
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Perfíl de usuario público</h2>
+            {% if mensaje %}
+            <div id="mensaje_actualizar" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                {{ mensaje }}
+            </div>
+            {% else %}
+            <div id="mensaje_actualizar" style="display: none;"></div>
+            {% endif %}
+            <div class="flex justify-center mb-6">
+                <img id="foto" src="{{ user.foto }}" alt="Foto de {{ user.nombre }}" class="rounded-full border-2 border-gray-200" width="100" height="100">
+            </div>
+            <form hx-post="/actualizar_perfil" hx-target="#htmx-perfil" hx-swap="outerHTML" method="POST" enctype="multipart/form-data" class="space-y-2">
+                <input type="hidden" name="id" value="{{ user.id }}">
+                
+                <div class="flex flex-col">
+                    <label for="nombre" class="text-sm font-medium text-gray-700 mb-1">Nombre:</label>
+                    <input  type="text" id="nombre" name="nombre" value="{{ user.nombre }}" required 
+                        class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="flex flex-col">
+                    <label for="email" class="text-sm font-medium text-gray-700 mb-1">Email:</label>
+                    <span class="text-gray-600 bg-gray-100 px-3 py-2 rounded-md">{{ user.email }}</span>
+                </div>
+                
+                <div class="flex flex-col">
+                    <label for="cursos" class="text-sm font-medium text-gray-700 mb-1">Cursos:</label>
+                    <span class="text-gray-600 bg-gray-100 px-3 py-2 rounded-md">{{ user.cursos }}</span>
+                </div>
+                        
+                <div class="flex flex-col">
+                    <label for="foto_url" class="text-sm font-medium text-gray-700 mb-1">Cambiar foto por URL:</label>
+                    <input type="url" id="foto_url" name="foto_url" placeholder="https://ejemplo.com/foto.jpg" 
+                        class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="flex flex-col">
+                    <label for="foto_file" class="text-sm font-medium text-gray-700 mb-1">O subir nueva foto:</label>
+                    <input type="file" id="foto_file" name="foto_file" accept="image/*" 
+                        class="border border-gray-300 rounded-md px-3 py-2 text-gray-600">
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        Actualizar perfil
+                    </button>
+                    <a href="{{ url_for('inicio') }}" class="text-blue-500 hover:text-blue-600 text-sm">Ver Cursos</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    fluidScroll({yPos: 'end', duration: 700});
+    document.getElementById('foto-perfil').src = document.getElementById('foto').src;
+    document.getElementById('nombre_user').innerText = document.getElementById('nombre').value;
+    document.getElementById('main').style.margin = '0'; // Nueva línea para quitar el margen
+
+    document.body.addEventListener('htmx:afterSwap', function (event) {
+        // Verificar si el contenido inyectado contiene el ID mensaje_actualizar
+        const mensajeActualizar = document.getElementById('mensaje_actualizar');
+        if (mensajeActualizar && mensajeActualizar.innerHTML.trim() !== '') {
+            ver_cursos();
+        }
+    });
+
+    function ver_cursos() {
+        fluidScroll({yPos: '0', duration: 700});
+        setTimeout(function () {
+            htmx.ajax('GET', '/cursos?id={{ user.id }}', {
+                target: '#contenido',
+                swap: 'innerHTML'
+            });
+        }, 1000);
+    }
+</script>
+

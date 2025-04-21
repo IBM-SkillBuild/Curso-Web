@@ -1,0 +1,43 @@
+<span style="margin-right:1em"> bienvenido a {{curso_nombre}}</span>
+<button class="  py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+style="background-color: black;color:bisque" 
+hx-get="/lista_de_videos/{{curso_nombre}}/{{user_id}}" 
+hx-trigger="click" 
+hx-target="#contenido" 
+hx-swap="innerHTML"
+>ir al curso {{curso_nombre}}
+ </button>
+
+ <button 
+ class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+ hx-get="/mis_cursos?id={{user_id}}" hx-target="#mis_cursos"
+  hx-swap="innerHTML" hx-trigger="click" hx-on::before-request="no_suave()"
+  >Mis cursos</button>
+
+  
+  <button id="todos_los_cursos"
+  class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+ 
+  hx-get="/cursos?id={{user_id}}" hx-target="#contenido"
+   hx-swap="innerHTML" hx-trigger="click" hx-on::before-request="ocultar(this.id)"
+   >Ver todos los cursos</button>
+
+   <div 
+   class="py-1 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+  
+   hx-get="/fondo_presentacion" hx-target="#contenido"
+    hx-swap="innerHTML" hx-trigger="load" hx-on::before-request="suave()"
+    ></div>
+
+    <script>
+          fluidScroll({yPos: '0', duration: 700});
+          
+    </script>
+
+    <script>
+      function ocultar(id){
+      
+          document.getElementById(id).style.display = "none";
+          suave()
+      }  
+  </script>

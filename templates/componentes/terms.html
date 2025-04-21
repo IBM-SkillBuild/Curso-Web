@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos de Servicio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-center text-blue-600 mb-2">TÉRMINOS DE SERVICIO</h1>
+            <p class="text-center text-gray-500">Última actualización:  {{fecha}}</p>
+        </header>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">1. INTRODUCCIÓN</h2>
+            <p class="mb-4">
+                Estos términos y condiciones rigen el uso de {{nombre_del_sitio_web}} y el acuerdo que existe entre usted y nosotros.
+            </p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">2. DEFINICIONES</h2>
+            <ul class="list-disc ml-8 mb-4">
+                <li class="mb-1">"Sitio web" significa [URL del sitio web]</li>
+                <li class="mb-1">"Nosotros", "nuestro" y "nos" se refiere a [Nombre de tu empresa]</li>
+                <li class="mb-1">"Usted" y "su" se refiere a la persona que accede o utiliza el sitio web</li>
+            </ul>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">3. ACEPTACIÓN DE TÉRMINOS</h2>
+            <p class="mb-4">
+                Al acceder o utilizar nuestro sitio web, usted confirma que acepta estos términos de servicio y que acuerda cumplir con ellos. 
+                Si no está de acuerdo con estos términos, debe abstenerse de utilizar nuestro sitio web.
+            </p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">4. CAMBIOS EN LOS TÉRMINOS</h2>
+            <p class="mb-4">
+                Podemos revisar estos términos de servicio en cualquier momento modificando esta página. 
+                Por favor, revise esta página de vez en cuando para tomar nota de los cambios que hayamos realizado.
+            </p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">5. ACCESO A NUESTRO SITIO WEB</h2>
+            <ul class="list-disc ml-8 mb-4">
+                <li class="mb-1">Nuestro sitio web se proporciona "tal cual" y "según disponibilidad"</li>
+                <li class="mb-1">No garantizamos que nuestro sitio web, o cualquier contenido en él, esté siempre disponible o sea ininterrumpido</li>
+                <li class="mb-1">Nos reservamos el derecho de restringir la disponibilidad de todo o parte de nuestro sitio web</li>
+            </ul>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">6. SU CUENTA Y CONTRASEÑA</h2>
+            <p class="mb-4">
+                Si se le proporciona un nombre de usuario, contraseña u otra información como parte de nuestros procedimientos de seguridad, 
+                debe tratar dicha información como confidencial y no debe divulgarla a ningún tercero.
+            </p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">7. PROPIEDAD INTELECTUAL</h2>
+            <ul class="list-disc ml-8 mb-4">
+                <li class="mb-1">Todos los derechos de propiedad intelectual en nuestro sitio web y el material publicado en él nos pertenecen o a nuestros licenciantes</li>
+                <li class="mb-1">No debe utilizar ninguna parte del contenido de nuestro sitio web para fines comerciales sin obtener una licencia para hacerlo de nosotros o nuestros licenciantes</li>
+            </ul>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">8. LIMITACIÓN DE NUESTRA RESPONSABILIDAD</h2>
+            <ul class="list-disc ml-8 mb-4">
+                <li class="mb-1">No excluimos ni limitamos de ninguna manera nuestra responsabilidad hacia usted cuando sería ilegal hacerlo</li>
+                <li class="mb-1">En la medida permitida por la ley, excluimos todas las condiciones, garantías, representaciones u otros términos implícitos</li>
+            </ul>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">9. LEY APLICABLE</h2>
+            <p class="mb-4">
+                Estos términos se rigen por [Jurisdicción legal, por ejemplo, "las leyes de España"] y están sujetos a la jurisdicción exclusiva de los tribunales de [Ciudad o región, por ejemplo, "Madrid"].
+            </p>
+        </section>
+
+        <section class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 text-blue-700">10. CONTACTO</h2>
+            <p class="mb-4">
+                Para contactarnos, por favor envíe un correo electrónico a <a href="mailto:email@ejemplo.com" class="text-blue-600 hover:underline">email@ejemplo.com</a>.
+            </p>
+        </section>
+
+        <footer class="mt-12 pt-4 border-t border-gray-200 text-center text-gray-500 text-sm">
+            <p>&copy; 2025 {{nombre_del_sitio_web}}. Todos los derechos reservados.</p>
+        </footer>
+    </div>
+    <script>
+        setTimeout(() => {
+            open_drawer()
+        }, 1000)
+            </script>
+</body>
+</html>

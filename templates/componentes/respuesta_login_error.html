@@ -1,0 +1,11 @@
+<div id='login-response' class='flex flex-col items-center'>
+    <p class='error' style="margin-top:0.5em">Email o contraseña incorrectos</p>
+    <button hx-get="/registro"
+            hx-trigger="click"
+            hx-swap="outerHTML"
+            hx-target="#login-reg"
+     class="mt-4 py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+        pulsa aqui si no estás registrado
+    </button>
+</div>
+

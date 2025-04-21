@@ -1,0 +1,71 @@
+<div class="flex justify-center items-center">
+    <div class="max-w-md w-full p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Añadir un nuevo video</h2>
+        <form action="/nuevo_video" method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="nombre" class="block text-gray-700 font-medium mb-2">Nombre del video</label>
+                <input type="text" id="nombre" name="nombre" class="w-full p-2 border rounded" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Origen del video</label>
+                <div class="flex items-center mb-2">
+                    <input type="radio" id="upload" name="video_source" value="upload" class="mr-2" checked>
+                    <label for="upload" class="text-gray-700">Subir video local</label>
+                </div>
+                <input type="file" id="video" name="video" class="w-full p-2 border rounded" accept="video/*" disabled>
+                <div class="flex items-center mt-2 mb-2">
+                    <input type="radio" id="url" name="video_source" value="url" class="mr-2">
+                    <label for="url" class="text-gray-700">Usar URL externa</label>
+                </div>
+                <input type="text" id="video_url" name="video_url" class="w-full p-2 border rounded" placeholder="Ej: https://youtube.com/..." disabled>
+            </div>
+            <div class="mb-4">
+                <label for="descripcion" class="block text-gray-700 font-medium mb-2">Descripción</label>
+                <textarea id="descripcion" name="descripcion" class="w-full p-2 border rounded" rows="3"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="curso" class="block text-gray-700 font-medium mb-2">Curso</label>
+                <select id="curso" name="curso" class="w-full p-2 border rounded" required>
+                    {% for curso in cursos %}
+                    <option value="{{ curso }}">{{ curso }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" hx-get="/cursos" hx-target="#contenido" hx-swap="innerHTML" 
+                        class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Habilitar/deshabilitar campos según la opción seleccionada
+    const uploadRadio = document.getElementById('upload');
+    const urlRadio = document.getElementById('url');
+    const videoInput = document.getElementById('video');
+    const urlInput = document.getElementById('video_url');
+
+    uploadRadio.addEventListener('change', function() {
+        videoInput.disabled = false;
+        videoInput.required = true;
+        urlInput.disabled = true;
+        urlInput.required = false;
+        urlInput.value = ''; // Limpiar el campo URL
+    });
+
+    urlRadio.addEventListener('change', function() {
+        videoInput.disabled = true;
+        videoInput.required = false;
+        videoInput.value = ''; // Limpiar el campo de archivo
+        urlInput.disabled = false;
+        urlInput.required = true;
+    });
+
+    // Estado inicial
+    videoInput.disabled = false;
+    videoInput.required = true;
+    urlInput.disabled = true;
+    urlInput.required = false;
+</script>

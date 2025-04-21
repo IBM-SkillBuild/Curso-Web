@@ -1,0 +1,25 @@
+<div class="fondo-flex">
+    <img src="/static/logos/portatil.jpg" alt="Logo Cohete" style="max-width: 80%;">
+</div>
+
+<style>
+    .fondo-flex {
+        display: flex;
+        justify-content: center; /* Centra horizontalmente */
+        align-items: center; /* Centra verticalmente */
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .fondo-flex img {
+        border-radius: 15px;
+        max-width: 100%; /* Evita que se desborde del contenedor */
+        margin: 0 auto;
+    }
+</style>
+
+<script>
+    document.getElementById('main').style.margin = '0'; // Nueva línea para quitar el margen
+    
+    fluidScroll({yPos: '0', duration: 700});
+</script>
