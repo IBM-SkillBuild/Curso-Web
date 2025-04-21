@@ -990,4 +990,4 @@ def cookies_policy():
     return render_template('componentes/cookies.html', fecha=fecha_ultima_actualizacion, nombre_del_sitio_web=nombre_del_sitio_web)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
