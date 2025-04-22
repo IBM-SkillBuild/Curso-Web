@@ -12,7 +12,7 @@ from PIL import Image
 import io
 import json
 from flask_cors import CORS
-from flask_session import Session
+#from flask_session import Session
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'mp4', 'avi', 'mov', 'mkv'}
@@ -32,28 +32,20 @@ CORS(app, resources={r"/*": {"origins": ["https://curso-web-alvr.onrender.com", 
 
 # Flask configuration for sessions
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.urandom(24)  # Fallback to random key if not set
-app.config['SESSION_COOKIE_NAME'] = 'flask_session'  # Explicit cookie name
-app.config['SESSION_COOKIE_HTTPONLY'] = True
+#app.config['SESSION_COOKIE_NAME'] = 'flask_session'  # Explicit cookie name
+#app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SECURE'] = True  # Set to True in production with HTTPS
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session lifetime
+#app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session lifetime
 
-# Configure Flask-Session to use filesystem
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = os.path.join(os.path.dirname(__file__), 'sessions')
+app.config['SESSION_TYPE'] = 'cookie'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_FILE_THRESHOLD'] = 500  # Max session files
 
-# Create sessions directory
-try:
-    os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
-except OSError as e:
-    print(f"Error creating sessions directory: {e}")
-    raise
+
 
 # Initialize Flask-Session
-Session(app)
+#Session(app)
 
 STATIC_FOLDER = 'static'
 
@@ -65,9 +57,9 @@ google = oauth.register(
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={'scope': 'openid email profile', 'prompt': 'select_account'},
+    # CAMBIO: redirect_uri debe coincidir EXACTAMENTE con el registrado en Google Cloud Console
     redirect_uri='https://curso-web-alvr.onrender.com/google_callback'
 )
-
 # Create database
 crear_db()
 
