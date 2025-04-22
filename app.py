@@ -29,7 +29,7 @@ CORS(app, resources={r"/*": {"origins": ["https://curso-web-alvr.onrender.com", 
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.urandom(24)  # Fallback to random key if not set
 app.config['SESSION_COOKIE_NAME'] = 'flask_session'  # Explicit cookie name
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_SECURE'] = True  # Set to True in production with HTTPS
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session lifetime
 
