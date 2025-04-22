@@ -19,7 +19,8 @@ def allowed_file(filename):
 
 # Load environment variables from .env
 # load_dotenv()
-print("GOOGLE_CLIENT_ID:", os.getenv('GOOGLE_CLIENT_ID'))
+load_dotenv('/etc/secrets/prod.env')
+
 
 fecha_ultima_actualizacion = os.getenv('ULTIMA_ACTUALIZACION')
 nombre_del_sitio_web = os.getenv('NOMBRE_DEL_SITIO_WEB')
