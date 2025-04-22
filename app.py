@@ -18,8 +18,10 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'mp4', 'avi', 'mov', 'mkv'}
 
 # Load environment variables from .env
-# load_dotenv()
-load_dotenv('/etc/secrets/prod.env')
+if os.getenv('RENDER'):
+    load_dotenv('/etc/secrets/prod.env')  # En producción (Render)
+else:
+    load_dotenv()  # En local
 
 
 fecha_ultima_actualizacion = os.getenv('ULTIMA_ACTUALIZACION')
