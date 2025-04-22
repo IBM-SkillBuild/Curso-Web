@@ -23,7 +23,7 @@ fecha_ultima_actualizacion = os.getenv('ULTIMA_ACTUALIZACION')
 nombre_del_sitio_web = os.getenv('NOMBRE_DEL_SITIO_WEB')
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://curso-web-alvr.onrender.com", "http://localhost:10000"], "supports_credentials": True}})
+CORS(app, resources={r"/*": {"origins": ["https://curso-web-alvr.onrender.com", "http://localhost:5000"], "supports_credentials": True}})
 
 # Flask configuration for sessions
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.urandom(24)  # Fallback to random key if not set
