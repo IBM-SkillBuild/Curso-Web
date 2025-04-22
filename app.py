@@ -19,7 +19,7 @@ def allowed_file(filename):
 
 # Load environment variables from .env
 if os.getenv('RENDER'):
-    load_dotenv('/etc/secrets/prod.env')  # En producción (Render)
+    load_dotenv('/etc/secrets/.env')  # En producción (Render)
 else:
     load_dotenv()  # En local
 
