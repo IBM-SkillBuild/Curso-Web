@@ -63,6 +63,13 @@ google = oauth.register(
 # Create database
 crear_db()
 
+@app.route('/check_env')
+def check_env():
+    return jsonify({
+        'GOOGLE_CLIENT_ID': os.getenv('GOOGLE_CLIENT_ID'),
+        'GOOGLE_CLIENT_SECRET': os.getenv('GOOGLE_CLIENT_SECRET')
+    })
+
 # Main route
 @app.route('/')
 def inicio():
