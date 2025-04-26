@@ -63,12 +63,18 @@ google = oauth.register(
     client_id=os.getenv('GOOGLE_CLIENT_ID'),
     client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile', 'prompt': 'select_account'},
-    redirect_uri='https://curso-web-alvr.onrender.com/google_callback'
+    client_kwargs={'scope': 'openid email profile', 'prompt': 'select_account'}
 )
 
 # Create database
 crear_db()
+
+@app.route('/check_env')
+def check_env():
+    return jsonify({
+        'GOOGLE_CLIENT_ID': os.getenv('GOOGLE_CLIENT_ID'),
+        'GOOGLE_CLIENT_SECRET': os.getenv('GOOGLE_CLIENT_SECRET')
+    })
 
 # Main route
 @app.route('/')
