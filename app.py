@@ -19,7 +19,9 @@ def allowed_file(filename):
 
 # Load environment variables from .env
 if os.getenv('RENDER'):
-    load_dotenv('/etc/secrets/.env')  # En producción (Render)
+    # En producción, Render usa variables de entorno directamente
+    if not os.getenv('GOOGLE_CLIENT_ID') or not os.getenv('GOOGLE_CLIENT_SECRET'):
+        raise ValueError("GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set in Render environment variables")
 else:
     load_dotenv()  # En local
 
