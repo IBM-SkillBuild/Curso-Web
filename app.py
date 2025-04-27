@@ -35,9 +35,11 @@ CORS(app, resources={r"/*": {"origins": ["https://curso-web-alvr.onrender.com", 
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or os.urandom(24)  # Fallback to random key if not set
 app.config['SESSION_COOKIE_NAME'] = 'flask_session'  # Explicit cookie name
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SECURE'] = True  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_SECURE'] = True if os.getenv('RENDER') else False
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session lifetime
+app.config['PREFERRED_URL_SCHEME'] = 'https' if os.getenv('RENDER') else 'http'
+app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
 
 # Configure Flask-Session to use filesystem
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -45,6 +47,7 @@ app.config['SESSION_FILE_DIR'] = os.path.join(os.path.dirname(__file__), 'sessio
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_FILE_THRESHOLD'] = 500  # Max session files
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
 # Create sessions directory
 try:
