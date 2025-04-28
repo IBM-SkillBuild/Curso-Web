@@ -74,12 +74,18 @@ google = oauth.register(
 # Create database
 crear_db()
 
-@app.route('/check_env')
-def check_env():
-    return jsonify({
-        'GOOGLE_CLIENT_ID': os.getenv('GOOGLE_CLIENT_ID'),
-        'GOOGLE_CLIENT_SECRET': os.getenv('GOOGLE_CLIENT_SECRET')
-    })
+# Función para validar fotos de perfil
+DEFAULT_PROFILE_PICTURE = '/static/images/foto-perfil.png'
+
+def get_valid_photo_path(foto):
+    """
+    Verifica si la foto existe (si es una ruta local). Retorna la foto predeterminada si no existe.
+    """
+    if foto and foto.startswith('/static/images/'):
+        file_path = os.path.join(app.static_folder, 'images', os.path.basename(foto))
+        if not os.path.exists(file_path):
+            return DEFAULT_PROFILE_PICTURE
+    return foto or DEFAULT_PROFILE_PICTURE
 
 # Main route
 @app.route('/')
@@ -94,7 +100,7 @@ def inicio():
             cursor.execute('SELECT id, nombre, foto FROM users WHERE session_token = ?', (session_token,))
             user = cursor.fetchone()
             if user:
-                user_data = {'id': user['id'], 'nombre': user['nombre'], 'foto': user['foto']}
+                user_data = {'id': user['id'], 'nombre': user['nombre'], 'foto': get_valid_photo_path(user['foto'])}
                 return render_template('index.html', user=user_data)
             return render_template('componentes/login.html')
     except sqlite3.Error as e:
@@ -256,8 +262,8 @@ def perfil():
                     'id': user['id'],
                     'nombre': user['nombre'],
                     'email': user['email'],
-                    'foto': user['foto'],
-                    'cursos': user['cursos'] if user['cursos'] else "No courses enrolled",
+                    'foto': get_valid_photo_path(user['foto']),
+                    'cursos': user['cursos'] if user['cursos'] else "No courses enrolled"
                 }
                 return render_template('componentes/perfil.html', user=user_data)
             return "User not found", 404
@@ -355,18 +361,104 @@ def listar_cursos():
 # List users route
 @app.route('/users')
 def listar_usuarios():
+    session_token = request.cookies.get('session_token')
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
+            # Obtener el ID del usuario activo
+            active_user_id = None
+            if session_token:
+                cursor.execute('SELECT id FROM users WHERE session_token = ?', (session_token,))
+                active_user = cursor.fetchone()
+                if active_user:
+                    active_user_id = active_user['id']
+            
+            # Obtener la lista de usuarios
             cursor.execute('SELECT id, nombre, cursos, foto FROM users')
             usuarios = cursor.fetchall()
             usuarios_procesados = [
-                (u['id'], u['nombre'], json.loads(u['cursos']) if u['cursos'] else [], u['foto'])
+                (u['id'], u['nombre'], json.loads(u['cursos']) if u['cursos'] else [], get_valid_photo_path(u['foto']))
                 for u in usuarios
             ]
-            return render_template("componentes/lista_de_usuarios.html", usuarios=usuarios_procesados)
+            return render_template("componentes/lista_de_usuarios.html", usuarios=usuarios_procesados, user_id=active_user_id)
     except sqlite3.Error as e:
         return f"Database error: {e}", 500
+
+# Delete user route
+@app.route('/borrar_usuario', methods=['POST'])
+def borrar_usuario():
+    session_token = request.cookies.get('session_token')
+    
+    # Intentar obtener user_id desde JSON o formulario
+    user_id_to_delete = None
+    if request.is_json:
+        data = request.get_json()
+        user_id_to_delete = data.get('user_id')
+    else:
+        user_id_to_delete = request.form.get('user_id')
+    
+    if not session_token or not user_id_to_delete:
+        return '<div class="text-red-500">Missing session token or user ID</div>', 400
+    
+    try:
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            # Verificar que el usuario activo tiene id == 1
+            cursor.execute('SELECT id FROM users WHERE session_token = ?', (session_token,))
+            active_user = cursor.fetchone()
+            if not active_user or active_user['id'] != 1:
+                return '<div class="text-red-500">Unauthorized: Only admin (id=1) can delete users</div>', 403
+            
+            # Prevenir que el admin se elimine a sí mismo
+            if int(user_id_to_delete) == 1:
+                return '<div class="text-red-500">Cannot delete admin user</div>', 403
+            
+            # Obtener cursos del usuario a eliminar
+            cursor.execute('SELECT cursos FROM users WHERE id = ?', (user_id_to_delete,))
+            user = cursor.fetchone()
+            if not user:
+                return '<div class="text-red-500">User not found</div>', 404
+            
+            cursos = json.loads(user['cursos']) if user['cursos'] else []
+            
+            # Actualizar inscritos en cursos
+            for curso in cursos:
+                cursor.execute('UPDATE cursos SET inscritos = inscritos - 1 WHERE nombre = ? AND inscritos > 0', (curso,))
+            
+            # Limpiar referencias del usuario en la tabla videos (tiempo_visto y tiempo_continuar)
+            cursor.execute('SELECT nombre, curso, tiempo_visto, tiempo_continuar FROM videos')
+            videos = cursor.fetchall()
+            for video in videos:
+                # Procesar tiempo_visto
+                tiempo_visto = json.loads(video['tiempo_visto']) if video['tiempo_visto'] else []
+                tiempo_visto = [entry for entry in tiempo_visto if entry.get('id_user') != str(user_id_to_delete)]
+                cursor.execute('UPDATE videos SET tiempo_visto = ? WHERE nombre = ? AND curso = ?',
+                              (json.dumps(tiempo_visto), video['nombre'], video['curso']))
+                
+                # Procesar tiempo_continuar
+                tiempo_continuar = json.loads(video['tiempo_continuar']) if video['tiempo_continuar'] else []
+                tiempo_continuar = [entry for entry in tiempo_continuar if entry.get('id_user') != str(user_id_to_delete)]
+                cursor.execute('UPDATE videos SET tiempo_continuar = ? WHERE nombre = ? AND curso = ?',
+                              (json.dumps(tiempo_continuar), video['nombre'], video['curso']))
+            
+            # Eliminar al usuario
+            cursor.execute('DELETE FROM users WHERE id = ?', (user_id_to_delete,))
+            if cursor.rowcount == 0:
+                return '<div class="text-red-500">User not found</div>', 404
+            
+            conn.commit()
+            
+            # Obtener la lista actualizada de usuarios
+            cursor.execute('SELECT id, nombre, cursos, foto FROM users')
+            usuarios = cursor.fetchall()
+            usuarios_procesados = [
+                (u['id'], u['nombre'], json.loads(u['cursos']) if u['cursos'] else [], get_valid_photo_path(u['foto']))
+                for u in usuarios
+            ]
+            return render_template("componentes/lista_de_usuarios_parcial.html", usuarios=usuarios_procesados, user_id=active_user['id'])
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return f'<div class="text-red-500">Database error: {e}</div>', 500
 
 # Add course route
 @app.route('/agregar_curso', methods=['GET'])
@@ -625,6 +717,7 @@ def marcar_video_terminado():
         print(f"Unexpected error: {e}")
         return jsonify({'error': f"Unexpected error: {e}"}), 500
 
+# Update watch time route
 @app.route('/tiempo_visto', methods=['GET', 'POST'])
 def tiempo_visto():
     if request.method == 'POST':
@@ -647,9 +740,10 @@ def tiempo_visto():
         print(f"Missing data: id_usuario={id_usuario}, nombre_curso={nombre_curso}, video={video}")
         return jsonify({'error': 'Missing data'}), 400
 
-    # Log received duration in POST
+    # Log received data in POST
     if request.method == 'POST':
-        print(f"Received duration in /tiempo_visto: {duracion}, type: {type(duracion)}")
+        print(f"Received in /tiempo_visto: id_usuario={id_usuario}, video={video}, course={nombre_curso}, "
+              f"tiempo_incremento={tiempo_incremento}, current_time={current_time}, duracion={duracion}")
 
     try:
         with get_db_connection() as conn:
@@ -672,8 +766,22 @@ def tiempo_visto():
                 duracion_db = video_data['duracion']
 
             if tiempo_incremento is not None:
-                tiempo_incremento = float(tiempo_incremento)
-                # Update tiempo_visto by adding real increment
+                # Validar tiempo_incremento
+                try:
+                    tiempo_incremento = float(tiempo_incremento)
+                    if tiempo_incremento < 0:
+                        print(f"Invalid tiempo_incremento: {tiempo_incremento} (negative value)")
+                        return jsonify({'error': 'Negative tiempo_incremento not allowed'}), 400
+                    # Limitar tiempo_incremento a 2 segundos para evitar incrementos grandes
+                    MAX_INCREMENTO = 2.0
+                    if tiempo_incremento > MAX_INCREMENTO:
+                        print(f"tiempo_incremento {tiempo_incremento} exceeds max allowed {MAX_INCREMENTO}, capping")
+                        tiempo_incremento = MAX_INCREMENTO
+                except (ValueError, TypeError) as e:
+                    print(f"Invalid tiempo_incremento: {tiempo_incremento}, error: {e}")
+                    return jsonify({'error': f"Invalid tiempo_incremento: {tiempo_incremento}"}), 400
+
+                # Update tiempo_visto
                 usuario_encontrado = False
                 for i, entry in enumerate(tiempo_visto_db):
                     if entry.get('id_user') == str(id_usuario):
@@ -685,7 +793,15 @@ def tiempo_visto():
 
                 # Update tiempo_continuar if provided
                 if current_time is not None:
-                    current_time = float(current_time)
+                    try:
+                        current_time = float(current_time)
+                        if current_time < 0:
+                            print(f"Invalid current_time: {current_time} (negative value)")
+                            return jsonify({'error': 'Negative current_time not allowed'}), 400
+                    except (ValueError, TypeError) as e:
+                        print(f"Invalid current_time: {current_time}, error: {e}")
+                        return jsonify({'error': f"Invalid current_time: {current_time}"}), 400
+
                     usuario_encontrado = False
                     for i, entry in enumerate(tiempo_continuar_db):
                         if entry.get('id_user') == str(id_usuario):
@@ -1017,31 +1133,6 @@ def eliminar_video():
                                  video_reproduciendo=video_reproduciendo)
     except sqlite3.Error as e:
         return render_template('componentes/error.html', mensaje=f"Database error: {e}"), 500
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        return render_template('componentes/error.html', mensaje=f"Unexpected error: {e}"), 500
-
-# Static routes
-@app.route('/fondo_presentacion')
-def fondo_presentacion():
-    return render_template('componentes/fondo_presentacion.html')
-
-@app.route('/privacy')
-def privacy_policy():
-    return render_template('componentes/privacy.html', fecha=fecha_ultima_actualizacion, nombre_del_sitio_web=nombre_del_sitio_web)
-
-@app.route('/terms')
-def terms_of_service():
-    return render_template('componentes/terms.html', fecha=fecha_ultima_actualizacion, nombre_del_sitio_web=nombre_del_sitio_web)
-
-@app.route('/cookies')
-def cookies_policy():
-    return render_template('componentes/cookies.html', fecha=fecha_ultima_actualizacion, nombre_del_sitio_web=nombre_del_sitio_web)
-
-@app.route('/favicon.ico')
-def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)

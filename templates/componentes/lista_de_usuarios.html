@@ -1,4 +1,3 @@
-<!-- templates/componentes/lista_de_usuarios.html -->
 <div class="container mx-auto w-[90%]"> <!-- Contenedor principal que limita el ancho -->
   <div class="w-full flex flex-col items-center m-0 p-0">
     <div class="w-[95%] mx-auto">
@@ -19,11 +18,11 @@
         </select>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div id="lista-usuarios" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {% for user in usuarios %}
         <div class="bg-white rounded-lg shadow-lg p-6 participant-card" data-courses="{{ ','.join(user[2]) | lower }}">
           <div class="flex items-center mb-4">
-            <img src="{{ user[3] }}" alt="Foto de {{ user[1] }}" class="w-[100px] h-auto rounded-full mr-4">
+            <img src="{{ user[3] | default('/static/images/foto-perfil.png') }}" alt="Foto de {{ user[1] }}" class="w-[100px] h-auto rounded-full mr-4">
             <div>
               <h3 class="text-lg font-semibold">{{ user[1] }}</h3>
               <p class="text-gray-600">ID: {{ user[0] }}</p>
@@ -41,6 +40,20 @@
             <p class="text-gray-500 italic">No hay cursos inscritos</p>
             {% endif %}
           </div>
+          {% if user_id == 1 %}
+          <div class="mt-4">
+            <button 
+              hx-post="{{ url_for('borrar_usuario') }}"
+              hx-vals='{"user_id": {{ user[0] }}}'
+              hx-target="#contenido"
+              hx-swap="innerHTML"
+              class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              onclick="return confirm('¿Estás seguro de que quieres borrar a {{ user[1] }}?')"
+            >
+              Borrar
+            </button>
+          </div>
+          {% endif %}
         </div>
         {% endfor %}
       </div>

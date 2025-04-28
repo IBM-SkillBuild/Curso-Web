@@ -240,12 +240,11 @@
             }
 
             function changeVideo(videoUrl, videoName) {
-                // Pausar el video actual (inicial o curso) antes de cambiar
                 videoPlayer.pause();
                 const sourceElement = videoPlayer.querySelector('source');
                 sourceElement.setAttribute('src', videoUrl);
                 videoPlayer.setAttribute('data-video', videoName);
-                videoPlayer.removeAttribute('autoplay'); // Remover autoplay para videos del curso
+                videoPlayer.removeAttribute('autoplay');
                 videoPlayer.load();
                 videoChangeCount++;
                 console.log('Video cambiado a:', videoUrl, 'Contador de cambios:', videoChangeCount);
@@ -511,103 +510,99 @@
                 }
             });
 
-            // Lógica de tiempo visto basada en incrementos reales
-            let lastTime = 0;
+            // Lógica de tiempo visto basada en incrementos periódicos
             let isPlaying = false;
             let hasMarkedAsCompleted = false;
+            let timeUpdateInterval = null;
 
             videoPlayer.addEventListener('play', () => {
                 isPlaying = true;
-                lastTime = videoPlayer.currentTime;
                 closeVideoDrawer();
                 close_drawer();
                 videoPlayer.classList.add('fade-out-in');
                 setTimeout(() => videoPlayer.classList.remove('fade-out-in'), 5000);
+
+                if (isCourseVideo() && videoChangeCount > 0 && !timeUpdateInterval) {
+                    timeUpdateInterval = setInterval(async () => {
+                        if (!isPlaying || !isCourseVideo()) return;
+
+                        let duracion;
+                        try {
+                            duracion = await waitForMetadata();
+                            if (!isValidDuration(duracion)) {
+                                console.warn('Duración inválida en intervalo de actualización:', duracion);
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('Error al obtener duración en intervalo:', error);
+                            return;
+                        }
+
+                        const currentTime = videoPlayer.currentTime;
+                        const tiempoIncremento = 1.0; // Incremento fijo de 1 segundo
+
+                        const payload = {
+                            id_usuario: idUsuario,
+                            nombre_curso: courseName,
+                            video: videoPlayer.dataset.video,
+                            tiempo_incremento: tiempoIncremento,
+                            current_time: currentTime,
+                            duracion: duracion
+                        };
+                        console.log('Enviando a /tiempo_visto:', payload);
+                        fetch('/tiempo_visto', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                console.error('Error al enviar tiempo_incremento:', response.status, response.statusText);
+                            } else {
+                                console.log('Tiempo incremento enviado:', tiempoIncremento, 'currentTime:', currentTime, 'Duración:', duracion);
+                            }
+                        })
+                        .catch(error => console.error('Error en solicitud:', error));
+                    }, 1000); // Actualizar cada 1 segundo
+                }
             });
 
             videoPlayer.addEventListener('pause', () => {
                 isPlaying = false;
+                if (timeUpdateInterval) {
+                    clearInterval(timeUpdateInterval);
+                    timeUpdateInterval = null;
+                }
                 if (isCourseVideo()) {
-                    sendTimeUpdate();
+                    sendCurrentTimeUpdate();
                 }
             });
 
-            videoPlayer.addEventListener('ended', () => {
+            videoPlayer.addEventListener('ended', async () => {
                 isPlaying = false;
-                if (isCourseVideo()) {
-                    sendTimeUpdate();
+                if (timeUpdateInterval) {
+                    clearInterval(timeUpdateInterval);
+                    timeUpdateInterval = null;
                 }
-            });
+                if (!isCourseVideo()) return;
 
-            videoPlayer.addEventListener('timeupdate', () => {
-                if (isPlaying && videoChangeCount > 0 && videoPlayer.currentTime - lastTime >= 5 && isCourseVideo()) {
-                    sendTimeUpdate();
-                }
-            });
+                // Enviar actualización final de current_time
+                sendCurrentTimeUpdate();
 
-            async function sendTimeUpdate() {
-                const currentTime = videoPlayer.currentTime;
-                const tiempoIncremento = currentTime - lastTime;
+                // Intentar marcar el video como terminado
                 let duracion;
                 try {
                     duracion = await waitForMetadata();
                     if (!isValidDuration(duracion)) {
-                        console.warn('Duración inválida en sendTimeUpdate:', duracion);
+                        console.warn('Duración inválida en ended:', duracion);
                         return;
                     }
                 } catch (error) {
-                    console.error('Error al obtener duración en sendTimeUpdate:', error);
+                    console.error('Error al obtener duración en ended:', error);
                     return;
                 }
 
-                if (tiempoIncremento > 0 && videoChangeCount > 0 && isPlaying && isCourseVideo()) {
-                    const payload = {
-                        id_usuario: idUsuario,
-                        nombre_curso: courseName,
-                        video: videoPlayer.dataset.video,
-                        tiempo_incremento: tiempoIncremento,
-                        current_time: currentTime,
-                        duracion: duracion
-                    };
-                    console.log('Enviando a /tiempo_visto:', payload);
-                    fetch('/tiempo_visto', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            console.error('Error al enviar tiempo_incremento:', response.status, response.statusText);
-                        } else {
-                            console.log('Tiempo incremento enviado:', tiempoIncremento, 'currentTime:', currentTime, 'Duración:', duracion);
-                        }
-                    })
-                    .catch(error => console.error('Error en solicitud:', error));
-                    lastTime = currentTime;
-                }
-            }
-
-            videoPlayer.addEventListener('timeupdate', async function() {
-                if (!isCourseVideo()) {
-                    console.log('Ignorando timeupdate para video inicial');
-                    return;
-                }
-
-                const tiempoActual = videoPlayer.currentTime;
-                let duracion;
-                try {
-                    duracion = await waitForMetadata();
-                    if (!isValidDuration(duracion)) {
-                        console.warn('Duración inválida en marcar_video_terminado:', duracion);
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error al obtener duración para marcar_video_terminado:', error);
-                    return;
-                }
-
-                const porcentajeVisto = (tiempoActual / duracion) * 100;
-                if (porcentajeVisto >= 98 && !hasMarkedAsCompleted && videoChangeCount > 0) {
+                if (!hasMarkedAsCompleted && videoChangeCount > 0) {
                     hasMarkedAsCompleted = true;
                     const payload = {
                         curso: courseName,
@@ -633,6 +628,9 @@
 
                             if (data.progreso_completo) {
                                 console.log('¡Curso completado! Todos los videos están marcados como terminados.');
+                                noVideoAlert.classList.remove('hidden');
+                                noVideoAlert.querySelector('p').textContent = 'Curso terminado. Pulsa "Comenzar desde el principio".';
+                                setTimeout(() => noVideoAlert.classList.add('hidden'), 5000);
                             }
                         }
                         if (data.status === 'success') {
@@ -647,6 +645,49 @@
                     .catch(error => console.error('Error al marcar video como terminado:', error));
                 }
             });
+
+            videoPlayer.addEventListener('seeked', async () => {
+                if (!isCourseVideo()) return;
+                sendCurrentTimeUpdate();
+            });
+
+            async function sendCurrentTimeUpdate() {
+                let duracion;
+                try {
+                    duracion = await waitForMetadata();
+                    if (!isValidDuration(duracion)) {
+                        console.warn('Duración inválida en sendCurrentTimeUpdate:', duracion);
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error al obtener duración en sendCurrentTimeUpdate:', error);
+                    return;
+                }
+
+                const currentTime = videoPlayer.currentTime;
+                const payload = {
+                    id_usuario: idUsuario,
+                    nombre_curso: courseName,
+                    video: videoPlayer.dataset.video,
+                    tiempo_incremento: 0, // No incrementar tiempo al saltar
+                    current_time: currentTime,
+                    duracion: duracion
+                };
+                console.log('Enviando a /tiempo_visto (seeked/pause):', payload);
+                fetch('/tiempo_visto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Error al enviar current_time:', response.status, response.statusText);
+                    } else {
+                        console.log('Current_time actualizado:', currentTime, 'Duración:', duracion);
+                    }
+                })
+                .catch(error => console.error('Error en solicitud:', error));
+            }
 
             closeVideoDrawer();
             close_drawer();
